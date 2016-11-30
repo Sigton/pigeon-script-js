@@ -98,6 +98,10 @@ var print = function() {
 	output(pop());
 }
 
+var pshtoarr = function() {
+	to_append.push(pop());
+}
+
 var output = function(data) {
 	var ul = document.getElementById("list");
 	var li = document.createElement("li");
@@ -118,10 +122,29 @@ var functions = {
 };
 
 var nonreturn = {
-	'p':print
+	'p':print,
+	'|':pshtoarr
+};
+
+var constants = {
+	'g':[]
 };
 
 var digits = [0,1,2,3,4,5,6,7,8,9];
+
+var set_var = ["A","B","C","D","E","F"];
+var get_var = ["a","b","c","d","e","f"];
+
+var to_append = [];
+
+scope = {
+	'a':0,
+	'b':0,
+	'c':0,
+	'd':0,
+	'e':0,
+	'f':"Hello World"
+};
 
 var parse = function(code) {
 	
@@ -169,6 +192,18 @@ var parse = function(code) {
 			parsed.push(["nonreturn", nonreturn[c()]]);
 		}
 		
+		if (c() in set_var) {
+			parsed.push(["setvar", c().toLowerCase()]);
+		}
+		
+		if (c() in get_var) {
+			parsed.push(["getvar", c()]);
+		}
+		
+		if (c() in constants) {
+			parsed.push(("push", constants[c()]));
+		}
+		
 		pointer += 1;
 
 	}
@@ -196,8 +231,35 @@ var execute = function(code) {
 			c()[1]();
 		}
 		
+		if (c()[0] == "setvar") {
+			if (scope[c()[1]] instanceof Array) {
+				var a = pop();
+				if (a instanceof String) {
+					if ("|" in a) {
+						var b = a.split("|");
+						for(var d = 0; i < b.length; d++) {
+							scope[c()[1]].push(d);
+						}
+					} else {
+						scope[c()[1]].push(a);
+					}
+				}
+				if ((a instanceof Number)) {
+					for(var b = 0; b < to_append.length; b++) {
+						scope[c()[1]].push(to_append.pop(0));
+					}
+					scope[c()[1]].push(a);
+				}
+			} else {
+				scope[c()[1]] = pop();
+			}
+		}
+		
+		if (c()[0] == "getvar") {
+			stack.push(scope[c()[1]]);
+		}
+		
 		pointer += 1;
-		console.log(stack);
 	}
 }
 
